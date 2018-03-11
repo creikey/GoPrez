@@ -3,7 +3,6 @@ package main
 import (
 	"image"
 	"os"
-	"time"
 
 	_ "image/jpeg"
 	_ "image/png"
@@ -46,7 +45,7 @@ func runGui(picChannel chan *pixel.Sprite) {
 	if err != nil {
 		panic(err)
 	}
-	myPic, err := getSprite("booster_landing.jpg")
+	myPic, err := getSprite("error.png")
 	go func() {
 		for {
 			myPic = <-picChannel
@@ -56,6 +55,7 @@ func runGui(picChannel chan *pixel.Sprite) {
 		panic(err)
 	}
 	for !win.Closed() {
+		win.Clear()
 		win.SetClosed(win.JustPressed(pixelgl.KeyEscape) || win.JustPressed(pixelgl.KeyQ))
 		myPic.Draw(win, pixel.IM.Moved(win.Bounds().Center()))
 		win.Update()
@@ -65,12 +65,7 @@ func runGui(picChannel chan *pixel.Sprite) {
 func main() {
 	transferChan := make(chan *pixel.Sprite)
 	go func() {
-		myPic, err := getSprite("portal_lock.jpg")
-		if err != nil {
-			panic(err)
-		}
-		time.Sleep(time.Second * 1)
-		transferChan <- myPic
+		Serve(transferChan)
 	}()
 	pixelgl.Run(func() {
 		runGui(transferChan)
