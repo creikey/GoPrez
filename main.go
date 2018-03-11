@@ -69,7 +69,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 1)
 		transferChan <- myPic
 	}()
 	pixelgl.Run(func() {
