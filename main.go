@@ -3,12 +3,17 @@ package main
 import (
 	"image"
 	"os"
+	"time"
 
 	_ "image/jpeg"
 	_ "image/png"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+)
+
+const (
+	port = "5440"
 )
 
 func getSprite(path string) (*pixel.Sprite, error) {
@@ -31,7 +36,7 @@ const (
 	winHeight = 1080
 )
 
-func runGui() {
+func runGui(picChannel chan *pixel.Sprite) {
 	win, err := pixelgl.NewWindow(pixelgl.WindowConfig{
 		Bounds:      pixel.R(0, 0, winWidth, winHeight),
 		VSync:       true,
@@ -42,6 +47,11 @@ func runGui() {
 		panic(err)
 	}
 	myPic, err := getSprite("booster_landing.jpg")
+	go func() {
+		for {
+			myPic = <-picChannel
+		}
+	}()
 	if err != nil {
 		panic(err)
 	}
@@ -53,5 +63,16 @@ func runGui() {
 }
 
 func main() {
-	pixelgl.Run(runGui)
+	transferChan := make(chan *pixel.Sprite)
+	go func() {
+		myPic, err := getSprite("portal_lock.jpg")
+		if err != nil {
+			panic(err)
+		}
+		time.Sleep(time.Second * 2)
+		transferChan <- myPic
+	}()
+	pixelgl.Run(func() {
+		runGui(transferChan)
+	})
 }
